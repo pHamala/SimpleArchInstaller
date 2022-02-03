@@ -151,8 +151,7 @@ echo "$username:$password" | chpasswd --root /mnt
 sleep 5
 
 # Add user as a sudoer
-pacman -S --noconfirm sudo
-arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/s/^#//' /etc/sudoers
+arch-chroot /mnt echo '%wheel ALL=(ALL) ALL' | EDITOR='tee -a' visudo
 sleep 5
 
 
@@ -190,7 +189,7 @@ fi
 
 clear
 EOF
-
+sleep 5
 rm -R /root/SimpleArchInstaller
 umount /mnt
 swapoff ${partition2}
