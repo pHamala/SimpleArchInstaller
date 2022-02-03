@@ -38,7 +38,7 @@ simplearchinstaller
 # Detect timezone
 time_zone="$(curl --fail https://ipapi.co/timezone)"
 clear
-easyarchinstaller
+simplearchinstaller
 echo -ne "System detected your timezone to be '$time_zone' \n"
 echo -ne "Is this correct? yes/no:" 
 read answer
@@ -146,7 +146,7 @@ echo -en "$password\n$password" | passwd
 # Create new user
 arch-chroot /mnt useradd -m -G wheel -s /bin/bash $username
 # Add user as a sudoer
-arch-chroot /mnt echo '%wheel ALL=(ALL) ALL' | EDITOR='tee -a' visudo
+arch-chroot /mnt sed -i 's/^# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers
 sleep 5
 # Add user password
 echo "$username:$password" | chpasswd --root /mnt
