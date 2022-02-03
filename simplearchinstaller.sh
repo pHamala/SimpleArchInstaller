@@ -144,12 +144,15 @@ clear
 echo -en "$password\n$password" | passwd
 
 # Create new user
-arch-chroot /mnt useradd -m -G wheel -s /bin/bash $username
-# Add user as a sudoer
-arch-chroot /mnt sed -i 's/^# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers
-sleep 5
+arch-chroot /mnt useradd -m -g users -G users,audio,lp,optical,storage,video,wheel,games,power,scanner -s /bin/bash $username
+
 # Add user password
 echo "$username:$password" | chpasswd --root /mnt
+sleep 5
+
+# Add user as a sudoer
+pacman -S --noconfirm sudo
+arch-chroot /mnt sed -i '/%wheel ALL=(ALL) ALL/s/^#//' /etc/sudoers
 sleep 5
 
 
