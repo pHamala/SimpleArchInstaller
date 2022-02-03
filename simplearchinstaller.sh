@@ -55,7 +55,11 @@ esac
 clear
 
 # Prepare disk for installation
-simplearchinstaller
+echo -ne "
+-------------------------------------------------------------------------
+                    Formatting disk 
+-------------------------------------------------------------------------
+"
 pacman -S --noconfirm gptfdisk btrfs-progs
 clear
 
@@ -115,7 +119,11 @@ fi
 clear
 
 # Install Arch Basic Packages
-simplearchinstaller
+echo -ne "
+-------------------------------------------------------------------------
+                    Installing Packages
+-------------------------------------------------------------------------
+"
 pacstrap /mnt base base-devel linux linux-firmware sudo
 clear
 
@@ -137,7 +145,7 @@ clear
 # Setup system clock
 echo -ne "
 -------------------------------------------------------------------------
-                    Setting up system clock
+                    Setting up system clock and timezone
 -------------------------------------------------------------------------
 "
 arch-chroot /mnt timedatectl set-ntp true
@@ -168,6 +176,7 @@ echo "$username:$password" | chpasswd --root /mnt
 # Add user as a sudoer
 arch-chroot /mnt echo '%wheel ALL=(ALL) ALL' | EDITOR='tee -a' visudo
 sleep 3
+clear
 
 echo -ne "
 -------------------------------------------------------------------------
