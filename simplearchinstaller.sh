@@ -118,27 +118,43 @@ clear
 simplearchinstaller
 pacstrap /mnt base base-devel linux linux-firmware sudo
 clear
+
 # Generate fstab file
 
 genfstab -pU /mnt >> /mnt/etc/fstab
 
 # Generate locale
-simplearchinstaller
+echo -ne "
+-------------------------------------------------------------------------
+                    Generating locales
+-------------------------------------------------------------------------
+"
 echo "en_US.UTF-8 UTF-8" >> /mnt/etc/locale.gen
 echo "LANG=en_US.UTF-8" >> /mnt/etc/locale.conf
 arch-chroot /mnt locale-gen
 clear
 
 # Setup system clock
+echo -ne "
+-------------------------------------------------------------------------
+                    Setting up system clock
+-------------------------------------------------------------------------
+"
 arch-chroot /mnt timedatectl set-ntp true
 arch-chroot /mnt timedatectl --no-ask-password set-timezone $timezone
 arch-chroot /mnt hwclock --systohc --localtime
+sleep 3
 clear
 
 # Set hostname
 echo $hostname > /mnt/etc/hostname
 clear
 
+echo -ne "
+-------------------------------------------------------------------------
+                    Setting up users and passwords 
+-------------------------------------------------------------------------
+"
 
 # Set root password
 echo -en "$password\n$password" | passwd
@@ -148,12 +164,16 @@ arch-chroot /mnt useradd -m -g users -G users,audio,lp,optical,storage,video,whe
 
 # Add user password
 echo "$username:$password" | chpasswd --root /mnt
-sleep 5
 
 # Add user as a sudoer
 arch-chroot /mnt echo '%wheel ALL=(ALL) ALL' | EDITOR='tee -a' visudo
-sleep 5
+sleep 3
 
+echo -ne "
+-------------------------------------------------------------------------
+                    Installing GRUB
+-------------------------------------------------------------------------
+"
 
 # Install Grub
 arch-chroot /mnt /bin/bash << EOF
