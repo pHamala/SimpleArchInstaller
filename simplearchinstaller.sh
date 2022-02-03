@@ -189,6 +189,8 @@ clear
 EOF
 
 rm -R /root/SimpleArchInstaller
+umount /mnt
+swapoff ${partition2}
 
 
 
