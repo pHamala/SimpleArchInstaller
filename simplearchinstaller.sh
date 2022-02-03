@@ -172,20 +172,19 @@ arch-chroot /mnt useradd -m -g users -G users,audio,lp,optical,storage,video,whe
 
 # Add user password
 echo "$username:$password" | chpasswd --root /mnt
-
-# Add user as a sudoer
-arch-chroot /mnt echo '%wheel ALL=(ALL) ALL' | EDITOR='tee -a' visudo
-sleep 3
 clear
 
 echo -ne "
 -------------------------------------------------------------------------
-                    Installing GRUB
+                    Finalizing install
 -------------------------------------------------------------------------
 "
 
 # Install Grub
 arch-chroot /mnt /bin/bash << EOF
+
+# Add user as sudoer
+echo '%wheel ALL=(ALL) ALL' | EDITOR='tee -a' visudo
 
 # Check if disk is sdd/hdd or NVME
 if [[ "${disk}" =~ "nvme" ]]; then
@@ -220,7 +219,7 @@ clear
 EOF
 sleep 5
 rm -R /root/SimpleArchInstaller
-umount /mnt
+umount -a /mnt
 swapoff ${partition2}
 
 
