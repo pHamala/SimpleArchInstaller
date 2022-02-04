@@ -35,7 +35,15 @@ clear
 
 simplearchinstaller
 
+# Enter keymap
+
+read -p "Please enter your keymap: " keymap
+clear
+
+simplearchinstaller
+
 # Detect timezone
+
 time_zone="$(curl --fail https://ipapi.co/timezone)"
 clear
 simplearchinstaller
@@ -46,7 +54,7 @@ case $answer in
     y|Y|yes|Yes|YES)
     timezone=$time_zone;;
     n|N|no|NO|No)
-    echo "Please enter your desired timezone e.g. Europe/London :" 
+    echo "Please enter your desired timezone e.g. Europe/Berlin :" 
     read new_timezone
     timezone=$new_timezone;;
     *) echo "Wrong option. Try again";;
@@ -95,9 +103,10 @@ if [[ ${BOOT_TYPE} =~ "BIOS" ]]; then
     mkfs.btrfs -L ROOT ${partition3} -f 
 
     # Mount created partitions
+
+    mkswap ${partition2}
     swapon ${partition2}
     mount -t btrfs ${partition3} /mnt
-
 
 else
 
@@ -112,6 +121,8 @@ else
     mkfs.btrfs -L ROOT ${partition3} -f 
 
     # Mount created partitions
+    
+    mkswap ${partition2}
     swapon ${partition2}
     mount -t btrfs ${partition3} /mnt
 
@@ -134,12 +145,17 @@ genfstab -pU /mnt >> /mnt/etc/fstab
 # Generate locale
 echo -ne "
 -------------------------------------------------------------------------
-                    Generating locales
+                    Generating locales and set keymap
 -------------------------------------------------------------------------
 "
+# Generate locale
 echo "en_US.UTF-8 UTF-8" >> /mnt/etc/locale.gen
 echo "LANG=en_US.UTF-8" >> /mnt/etc/locale.conf
 arch-chroot /mnt locale-gen
+
+# Add persistent keymap
+arch-chroot /mnt 
+echo "KEYMAP=$keymap" > /etc/vconsole.conf
 clear
 
 # Setup system clock
@@ -172,11 +188,12 @@ arch-chroot /mnt useradd -m -g users -G users,audio,lp,optical,storage,video,whe
 
 # Add user password
 echo "$username:$password" | chpasswd --root /mnt
+sleep 3
 clear
 
 echo -ne "
 -------------------------------------------------------------------------
-                    Finalizing install
+                    Finalize install
 -------------------------------------------------------------------------
 "
 
@@ -186,18 +203,10 @@ arch-chroot /mnt /bin/bash << EOF
 # Add user as sudoer
 echo '%wheel ALL=(ALL) ALL' | EDITOR='tee -a' visudo
 
-# Check if disk is sdd/hdd or NVME
-if [[ "${disk}" =~ "nvme" ]]; then
-    partition1=${DISK}p1
-
-else
-    partition1=${disk}1
-
-fi
-
 # Check if boot type is BIOS or UEFI
 if [[ -d "/sys/firmware/efi" ]]; then
     
+    mkinitcpio -p linux
     pacman -S grub efibootmgr os-prober --noconfirm
     mkdir /boot/efi
     mount ${partition1} /boot/efi
@@ -205,12 +214,11 @@ if [[ -d "/sys/firmware/efi" ]]; then
     grub-mkconfig -o /boot/grub/grub.cfg 
     
 
-else [[ ! -d "/sys/firmware/efi" ]]; 
+else 
     
+    mkinitcpio -p linux
     pacman -S grub os-prober --noconfirm
-    mkdir /boot
-    mount ${partition1} /boot
-    grub-install ${disk}
+    grub-install --target=i386-pc ${disk}
     grub-mkconfig -o /boot/grub/grub.cfg 
 
 fi
@@ -218,9 +226,7 @@ fi
 clear
 EOF
 sleep 5
-rm -R /root/SimpleArchInstaller
-umount -a /mnt
-swapoff ${partition2}
+
 
 
 
