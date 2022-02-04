@@ -154,8 +154,7 @@ echo "LANG=en_US.UTF-8" >> /mnt/etc/locale.conf
 arch-chroot /mnt locale-gen
 
 # Add persistent keymap
-arch-chroot /mnt 
-echo "KEYMAP=$keymap" > /etc/vconsole.conf
+arch-chroot /mnt echo "KEYMAP=$keymap" > /etc/vconsole.conf
 clear
 
 # Setup system clock
