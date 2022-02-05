@@ -260,7 +260,7 @@ echo -ne "
 sleep 3
 if $ssd_disk=yes; then
     systemctl enable fstrim.timer
-fi    
+ 
 
 systemctl networkmanager
 systemctl enable cups.service
