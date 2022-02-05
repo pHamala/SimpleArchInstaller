@@ -33,20 +33,9 @@ echo -ne "
 read -rep "Please enter full path to disk: (example /dev/sda): " disk
 clear
 
-simplearchinstaller
-echo -ne "Is your disk a SSD?"
-echo -ne "yes/no:"
-read answer
-case $ssd_answer in
-    y|Y|yes|Yes|YES)
-    ssd_disk=yes;;
-    n|N|no|NO|No)
-    ssd_disk=no
-
-simplearchinstaller
 
 # Enter keymap
-
+simplearchinstaller
 read -rep "Please enter your keymap: " keymap
 clear
 
@@ -300,7 +289,9 @@ fi
 
 clear
 EOF
-sleep 5
+
+simplearchinstaller
+echo -ne "Arch Linux installed successfully. Please reboot and enjoy!"
 
 
 
