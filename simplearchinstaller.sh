@@ -12,10 +12,10 @@ simplearchinstaller
 
 # Enter userinfo
 
-read -p "Please enter your username: " username
+read -rep "Please enter your username: " username
 
 echo -ne "Please enter your password: \n"
-read -s password 
+read -sr password 
 
 read -rep "Please enter your hostname: " hostname
 clear
@@ -30,14 +30,14 @@ echo -ne "
     THIS WILL FORMAT AND DELETE ALL DATA ON THE DISK                  
 ------------------------------------------------------------------------
 "
-read -p "Please enter full path to disk: (example /dev/sda): " disk
+read -rep "Please enter full path to disk: (example /dev/sda): " disk
 clear
 
 simplearchinstaller
 
 # Enter keymap
 
-read -p "Please enter your keymap: " keymap
+read -rep "Please enter your keymap: " keymap
 clear
 
 simplearchinstaller
@@ -129,18 +129,65 @@ else
 fi   
 clear
 
+# determine processor type and install microcode
+
+proc_type=$(lscpu)
+if grep -E "GenuineIntel" <<< ${proc_type}; then
+    ucode=intel-ucode
+    
+elif grep -E "AuthenticAMD" <<< ${proc_type}; then
+    ucode=amd-ucode    
+ 
+fi
+
+# Determine Graphic Drivers find and install
+echo -ne "
+-------------------------------------------------------------------------
+                    Determining gpu type
+-------------------------------------------------------------------------
+"
+sleep 3
+gpu_type=$(lspci)
+if grep -E "NVIDIA|GeForce" <<< ${gpu_type}; then
+    gpu=nvidia nvidia-xconfig
+
+elif lspci | grep 'VGA' | grep -E "Radeon|AMD"; then
+    gpu=xf86-video-amdgpu
+
+elif grep -E "Integrated Graphics Controller" <<< ${gpu_type}; then
+    gpu=libva-intel-driver libvdpau-va-gl lib32-vulkan-intel vulkan-intel libva-intel-driver libva-utils lib32-mesa
+
+elif grep -E "Intel Corporation UHD" <<< ${gpu_type}; then
+    gpu=ibva-intel-driver libvdpau-va-gl lib32-vulkan-intel vulkan-intel libva-intel-driver libva-utils lib32-mesa
+fi
+clear
+
+
+# Optimize mirrorlist and pacman for faster downloads
+echo -ne "
+-------------------------------------------------------------------------
+                    Installing Packages
+-------------------------------------------------------------------------
+"
+sleep 3
+iso=$(curl -4 ifconfig.co/country-iso)
+sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
+pacman -S --noconfirm reflector rsync
+cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
+clear
+reflector -a 48 -c $iso -f 5 -l 20 --sort rate --save /etc/pacman.d/mirrorlist
+
 # Install Arch Basic Packages
 echo -ne "
 -------------------------------------------------------------------------
                     Installing Packages
 -------------------------------------------------------------------------
 "
-pacstrap /mnt base base-devel linux linux-firmware sudo
+sleep 3
+pacstrap /mnt base base-devel linux linux-firmware sudo $ucode $gpu networkmanager dhclient cups nano
 clear
 
-# Generate fstab file
 
-genfstab -pU /mnt >> /mnt/etc/fstab
 
 # Generate locale
 echo -ne "
@@ -148,6 +195,10 @@ echo -ne "
                     Generating locales and set keymap
 -------------------------------------------------------------------------
 "
+
+# Generate fstab file
+genfstab -pU /mnt >> /mnt/etc/fstab
+
 # Generate locale
 echo "en_US.UTF-8 UTF-8" >> /mnt/etc/locale.gen
 echo "LANG=en_US.UTF-8" >> /mnt/etc/locale.conf
@@ -189,6 +240,16 @@ arch-chroot /mnt useradd -m -g users -G users,audio,lp,optical,storage,video,whe
 echo "$username:$password" | chpasswd --root /mnt
 sleep 3
 clear
+
+# Enable system services
+echo -ne "
+-------------------------------------------------------------------------
+                    Enabling services
+-------------------------------------------------------------------------
+"
+sleep 3
+
+
 
 echo -ne "
 -------------------------------------------------------------------------
