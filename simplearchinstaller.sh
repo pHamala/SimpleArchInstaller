@@ -258,10 +258,8 @@ echo -ne "
 -------------------------------------------------------------------------
 "
 sleep 3
-if $ssd_disk=yes; then
-    systemctl enable fstrim.timer
- 
 
+systemctl enable fstrim.timer
 systemctl networkmanager
 systemctl enable cups.service
 ntpd -qg
