@@ -34,6 +34,16 @@ read -rep "Please enter full path to disk: (example /dev/sda): " disk
 clear
 
 simplearchinstaller
+echo -ne "Is your disk a SSD?"
+echo -ne "yes/no:"
+read answer
+case $ssd_answer in
+    y|Y|yes|Yes|YES)
+    ssd_disk=yes;;
+    n|N|no|NO|No)
+    ssd_disk=no
+
+simplearchinstaller
 
 # Enter keymap
 
@@ -248,8 +258,15 @@ echo -ne "
 -------------------------------------------------------------------------
 "
 sleep 3
-
-
+if $ssd_disk=yes; then
+    systemctl enable fstrim.timer
+else
+fi
+systemctl networkmanager
+systemctl enable cups.service
+ntpd -qg
+systemctl enable ntpd.service
+systemctl enable NetworkManager.service    
 
 echo -ne "
 -------------------------------------------------------------------------
