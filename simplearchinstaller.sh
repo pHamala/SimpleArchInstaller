@@ -166,7 +166,7 @@ clear
 # Optimize mirrorlist and pacman for faster downloads
 echo -ne "
 -------------------------------------------------------------------------
-                    Installing Packages
+                    Optimizing mirrors and pacman 
 -------------------------------------------------------------------------
 "
 sleep 3
