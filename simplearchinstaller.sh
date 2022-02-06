@@ -184,14 +184,12 @@ clear
 # Install Arch Basic Packages
 echo -ne "
 -------------------------------------------------------------------------
-                    Installing Packages
+                    Installing Base Arch Packages
 -------------------------------------------------------------------------
 "
 sleep 3
 pacstrap /mnt base base-devel linux linux-firmware sudo $ucode $gpu networkmanager dhclient nano
 clear
-
-
 
 # Generate locale
 echo -ne "
@@ -246,6 +244,22 @@ arch-chroot /mnt useradd -m -g users -G users,audio,lp,optical,storage,video,whe
 echo "$username:$password" | chpasswd --root /mnt
 clear
 
+echo -ne "
+-------------------------------------------------------------------------
+                    Installing Xorg
+-------------------------------------------------------------------------
+"
+sleep 3
+arch-chroot /mnt pacman -S mesa xorg xorg-server xorg-apps xorg-drivers xorg-xkill xorg-xinit xterm xwayland egl-wayland
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Installing additional packages
+-------------------------------------------------------------------------
+"
+sleep 3
+pacman -S cups bluez bluez-libs bluez-utils networkmanager ntfs-3g p7zip zip
+
 # Enable system services
 echo -ne "
 -------------------------------------------------------------------------
@@ -254,8 +268,9 @@ echo -ne "
 "
 sleep 3
 systemctl enable fstrim.timer
-systemctl enable ntpd.service
-systemctl enable NetworkManager.service    
+systemctl enable NetworkManager  
+systemctl enable cups
+systemctl enable bluetooth
 
 echo -ne "
 -------------------------------------------------------------------------
@@ -295,7 +310,6 @@ EOF
 simplearchinstaller
 rm -R /root/SimpleArchInstaller
 echo -ne "
--------------------------------------------------------------------------
             Arch Linux installed successfully, reboot and enjoy!
 -------------------------------------------------------------------------
 "
