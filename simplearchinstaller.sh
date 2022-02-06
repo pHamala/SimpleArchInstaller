@@ -250,7 +250,7 @@ echo -ne "
 -------------------------------------------------------------------------
 "
 sleep 3
-arch-chroot /mnt pacman -S mesa xorg xorg-server xorg-apps xorg-drivers xorg-xkill xorg-xinit xterm xwayland egl-wayland $gpu --noconfirm
+arch-chroot /mnt pacman -S mesa xorg xorg-server xorg-apps xorg-drivers xorg-xkill xorg-xinit xterm xwayland egl-wayland $gpu --noconfirm --needed
 
 echo -ne "
 -------------------------------------------------------------------------
@@ -258,7 +258,7 @@ echo -ne "
 -------------------------------------------------------------------------
 "
 sleep 3
-pacman -S cups bluez bluez-libs bluez-utils networkmanager ntfs-3g p7zip zip --noconfirm
+pacman -S cups bluez bluez-libs bluez-utils networkmanager ntfs-3g p7zip zip --noconfirm --needed
 
 # Enable system services
 echo -ne "
