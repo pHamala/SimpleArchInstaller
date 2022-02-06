@@ -36,9 +36,9 @@ clear
 # Enter keymap
 simplearchinstaller
 echo -ne "
-    If you are unsure what keymap you should choose, quit this script
-    with CTRL+C and type ls /usr/share/kbd/keymaps/**/*.map.gz                 
-------------------------------------------------------------------------
+If you are unsure what keymap you should choose, quit this script
+with CTRL+C and type ls /usr/share/kbd/keymaps/**/*.map.gz
+------------------------------------------------------------------------                
 "
 read -rep "Please enter your keymap: " keymap
 clear
@@ -250,7 +250,7 @@ echo -ne "
 -------------------------------------------------------------------------
 "
 sleep 3
-arch-chroot /mnt pacman -S mesa xorg xorg-server xorg-apps xorg-drivers xorg-xkill xorg-xinit xterm xwayland egl-wayland
+arch-chroot /mnt pacman -S mesa xorg xorg-server xorg-apps xorg-drivers xorg-xkill xorg-xinit xterm xwayland egl-wayland $gpu --noconfirm
 
 echo -ne "
 -------------------------------------------------------------------------
@@ -258,7 +258,7 @@ echo -ne "
 -------------------------------------------------------------------------
 "
 sleep 3
-pacman -S cups bluez bluez-libs bluez-utils networkmanager ntfs-3g p7zip zip
+pacman -S cups bluez bluez-libs bluez-utils networkmanager ntfs-3g p7zip zip --noconfirm
 
 # Enable system services
 echo -ne "
