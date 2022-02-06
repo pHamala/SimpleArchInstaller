@@ -206,7 +206,7 @@ echo "LANG=en_US.UTF-8" >> /mnt/etc/locale.conf
 arch-chroot /mnt locale-gen
 
 # Add persistent keymap
-arch-chroot /mnt echo "KEYMAP=$keymap" > /etc/vconsole.conf
+arch-chroot /mnt localctl set-keymap --no-convert $keymap
 clear
 
 # Setup system clock
@@ -251,7 +251,6 @@ echo -ne "
 sleep 3
 
 systemctl enable fstrim.timer
-systemctl networkmanager
 systemctl enable cups.service
 ntpd -qg
 systemctl enable ntpd.service
