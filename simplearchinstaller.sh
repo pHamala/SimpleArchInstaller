@@ -20,10 +20,10 @@ read -sr password
 read -rep "Please enter your hostname: " hostname
 clear
 
-simplearchinstaller
+
 
 # selection for disk type
-
+simplearchinstaller
 lsblk -n --output TYPE,KNAME,SIZE | awk '$1=="disk"{print NR,"/dev/"$2" - "$3}' # show disks with /dev/ prefix and size
 echo -ne "
 ------------------------------------------------------------------------
@@ -64,6 +64,8 @@ case $answer in
 esac
 
 clear
+
+
 
 # Prepare disk for installation
 echo -ne "
@@ -250,7 +252,7 @@ echo -ne "
 -------------------------------------------------------------------------
 "
 sleep 3
-arch-chroot /mnt pacman -S mesa xorg xorg-server xorg-apps xorg-drivers xorg-xkill xorg-xinit xterm xwayland egl-wayland $gpu --noconfirm --needed
+arch-chroot /mnt pacman -S --noconfirm --needed mesa xorg xorg-server xorg-apps xorg-drivers xorg-xkill xorg-xinit xterm xwayland egl-wayland xwayland $gpu 
 
 echo -ne "
 -------------------------------------------------------------------------
@@ -258,7 +260,7 @@ echo -ne "
 -------------------------------------------------------------------------
 "
 sleep 3
-pacman -S cups bluez bluez-libs bluez-utils networkmanager ntfs-3g p7zip zip --noconfirm --needed
+pacman -S --noconfirm --needed cups bluez bluez-libs bluez-utils networkmanager ntfs-3g p7zip zip 
 
 # Enable system services
 echo -ne "
