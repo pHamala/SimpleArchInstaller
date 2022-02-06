@@ -139,6 +139,8 @@ elif grep -E "AuthenticAMD" <<< ${proc_type}; then
  
 fi
 
+clear
+
 # Determine Graphic Drivers find and install
 echo -ne "
 -------------------------------------------------------------------------
@@ -291,8 +293,11 @@ clear
 EOF
 
 simplearchinstaller
-echo -ne "Arch Linux installed successfully. Please reboot and enjoy!"
-
+echo -ne "
+-------------------------------------------------------------------------
+            Arch Linux installed successfully, reboot and enjoy!
+-------------------------------------------------------------------------
+"
 
 
 
