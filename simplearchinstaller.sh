@@ -36,7 +36,6 @@ clear
 # Enter keymap
 simplearchinstaller
 echo -ne "
-------------------------------------------------------------------------
     If you are unsure what keymap you should choose, quit this script
     with CTRL+C and type ls /usr/share/kbd/keymaps/**/*.map.gz                 
 ------------------------------------------------------------------------
