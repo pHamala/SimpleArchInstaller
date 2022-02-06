@@ -35,6 +35,12 @@ clear
 
 # Enter keymap
 simplearchinstaller
+echo -ne "
+------------------------------------------------------------------------
+    If you are unsure what keymap you should choose, quit this script
+    with CTRL+C and type ls /usr/share/kbd/keymaps/**/*.map.gz                 
+------------------------------------------------------------------------
+"
 read -rep "Please enter your keymap: " keymap
 clear
 
@@ -173,7 +179,6 @@ iso=$(curl -4 ifconfig.co/country-iso)
 sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
 pacman -S --noconfirm reflector rsync
 cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
-clear
 reflector -a 48 -c $iso -f 5 -l 20 --sort rate --save /etc/pacman.d/mirrorlist
 clear
 
@@ -205,7 +210,7 @@ echo "LANG=en_US.UTF-8" >> /mnt/etc/locale.conf
 arch-chroot /mnt locale-gen
 
 # Add persistent keymap
-arch-chroot /mnt localctl set-keymap --no-convert $keymap
+arch-chroot /mnt localectl --no-convert set-keymap $keymap
 clear
 
 # Setup system clock
@@ -222,7 +227,7 @@ sleep 3
 clear
 
 # Set hostname
-echo $hostname > /mnt/etc/hostname
+arch-chroot /mnt echo $hostname > /mnt/etc/hostname
 clear
 
 echo -ne "
@@ -250,7 +255,6 @@ echo -ne "
 "
 sleep 3
 systemctl enable fstrim.timer
-ntpd -qg
 systemctl enable ntpd.service
 systemctl enable NetworkManager.service    
 
