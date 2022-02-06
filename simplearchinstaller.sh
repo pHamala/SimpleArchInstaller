@@ -33,7 +33,6 @@ echo -ne "
 read -rep "Please enter full path to disk: (example /dev/sda): " disk
 clear
 
-
 # Enter keymap
 simplearchinstaller
 read -rep "Please enter your keymap: " keymap
@@ -128,7 +127,7 @@ else
 fi   
 clear
 
-# determine processor type and install microcode
+# determine processor-type 
 
 proc_type=$(lscpu)
 if grep -E "GenuineIntel" <<< ${proc_type}; then
@@ -138,13 +137,12 @@ elif grep -E "AuthenticAMD" <<< ${proc_type}; then
     ucode=amd-ucode    
  
 fi
-
 clear
 
 # Determine Graphic Drivers find and install
 echo -ne "
 -------------------------------------------------------------------------
-                    Determining gpu type
+                    Determining GPU
 -------------------------------------------------------------------------
 "
 sleep 3
@@ -177,6 +175,7 @@ pacman -S --noconfirm reflector rsync
 cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
 clear
 reflector -a 48 -c $iso -f 5 -l 20 --sort rate --save /etc/pacman.d/mirrorlist
+clear
 
 # Install Arch Basic Packages
 echo -ne "
@@ -185,7 +184,7 @@ echo -ne "
 -------------------------------------------------------------------------
 "
 sleep 3
-pacstrap /mnt base base-devel linux linux-firmware sudo $ucode $gpu networkmanager dhclient cups nano
+pacstrap /mnt base base-devel linux linux-firmware sudo $ucode $gpu networkmanager dhclient nano
 clear
 
 
@@ -196,7 +195,7 @@ echo -ne "
                     Generating locales and set keymap
 -------------------------------------------------------------------------
 "
-
+sleep 3
 # Generate fstab file
 genfstab -pU /mnt >> /mnt/etc/fstab
 
@@ -215,6 +214,7 @@ echo -ne "
                     Setting up system clock and timezone
 -------------------------------------------------------------------------
 "
+sleep 3
 arch-chroot /mnt timedatectl set-ntp true
 arch-chroot /mnt timedatectl --no-ask-password set-timezone $timezone
 arch-chroot /mnt hwclock --systohc --localtime
@@ -231,6 +231,7 @@ echo -ne "
 -------------------------------------------------------------------------
 "
 
+sleep 3
 # Set root password
 echo -en "$password\n$password" | passwd
 
@@ -239,7 +240,6 @@ arch-chroot /mnt useradd -m -g users -G users,audio,lp,optical,storage,video,whe
 
 # Add user password
 echo "$username:$password" | chpasswd --root /mnt
-sleep 3
 clear
 
 # Enable system services
@@ -249,9 +249,7 @@ echo -ne "
 -------------------------------------------------------------------------
 "
 sleep 3
-
 systemctl enable fstrim.timer
-systemctl enable cups.service
 ntpd -qg
 systemctl enable ntpd.service
 systemctl enable NetworkManager.service    
@@ -263,6 +261,7 @@ echo -ne "
 "
 
 # Install Grub
+sleep 3
 arch-chroot /mnt /bin/bash << EOF
 
 # Add user as sudoer
@@ -278,7 +277,6 @@ if [[ -d "/sys/firmware/efi" ]]; then
     grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi
     grub-mkconfig -o /boot/grub/grub.cfg 
     
-
 else 
     
     mkinitcpio -p linux
