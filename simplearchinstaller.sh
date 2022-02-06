@@ -294,11 +294,13 @@ clear
 EOF
 
 simplearchinstaller
+rm -R /root/SimpleArchInstaller
 echo -ne "
 -------------------------------------------------------------------------
             Arch Linux installed successfully, reboot and enjoy!
 -------------------------------------------------------------------------
 "
+
 
 
 
