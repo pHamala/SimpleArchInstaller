@@ -295,7 +295,7 @@ echo -ne "
 -------------------------------------------------------------------------
 "
 sleep 3
-arch-chroot /mnt pacman -S --noconfirm --needed mesa xorg xorg-server xorg-xwayland $gpu $ucode cups bluez bluez-libs bluez-utils networkmanager ntfs-3g p7zip zip sudo nano
+arch-chroot /mnt pacman -S --noconfirm --needed mesa xorg xorg-server xorg-xwayland $gpu $ucode cups bluez bluez-libs bluez-utils networkmanager ntfs-3g p7zip zip
 clear
 
 echo -ne "
@@ -359,7 +359,7 @@ clear
 EOF
 
 simplearchinstaller
-rm -R /root/SimpleArchInstaller
+#rm -R /root/SimpleArchInstaller
 echo -ne "
             Arch Linux installed successfully, reboot and enjoy!
 -------------------------------------------------------------------------
