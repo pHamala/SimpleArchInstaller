@@ -51,18 +51,13 @@ echo -ne "
     5)      TTY (No graphical desktop environment)
 
 "
-read -rep "Select your Desktop Environment: " DE
+read -rep "Select your Desktop Environment. Choose number: " DE
 case $DE in
-1||KDE|KDe|Kde|kde)
-    Desktop_Environment=KDE;;
-2||GNOME|Gnome|gnome)
-    Desktop_Environment=Gnome;;
-3||XFCE|Xfce|xfce)
-    Desktop_Environment=Xfce;;
-4||CINNAMON|Cinnamon|cinnamon)
-    Desktop_Environment=Cinnamon;;
-5||TTY|Tty|tty)
-    Desktop_Environment=TTY;;
+1) Desktop_Environment=KDE;;
+2) Desktop_Environment=Gnome;;
+3) Desktop_Environment=Xfce;;
+4) Desktop_Environment=Cinnamon;;
+5) Desktop_Environment=TTY;;
 
 clear
 
