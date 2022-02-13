@@ -13,13 +13,10 @@ simplearchinstaller
 # Enter userinfo
 
 read -rep "Please enter your username: " username
-
 echo -ne "Please enter your password: \n"
 read -sr password 
-
 read -rep "Please enter your hostname: " hostname
 clear
-
 
 
 # selection for disk type
@@ -27,7 +24,7 @@ simplearchinstaller
 lsblk -n --output TYPE,KNAME,SIZE | awk '$1=="disk"{print NR,"/dev/"$2" - "$3}' # show disks with /dev/ prefix and size
 echo -ne "
 ------------------------------------------------------------------------
-    THIS WILL FORMAT AND DELETE ALL DATA ON THE DISK                  
+    THIS WILL ERASE EVERYTHING IN THE DISK                 
 ------------------------------------------------------------------------
 "
 read -rep "Please enter full path to disk: (example /dev/sda): " disk
@@ -64,8 +61,6 @@ case $answer in
 esac
 
 clear
-
-
 
 # Prepare disk for installation
 echo -ne "
@@ -190,13 +185,13 @@ echo -ne "
 -------------------------------------------------------------------------
 "
 sleep 3
-pacstrap /mnt base base-devel linux linux-firmware sudo $ucode $gpu networkmanager dhclient nano
+pacstrap /mnt base base-devel linux linux-firmware
 clear
 
 # Generate locale
 echo -ne "
 -------------------------------------------------------------------------
-                    Generating locales and set keymap
+                    Generating locales and keymap
 -------------------------------------------------------------------------
 "
 sleep 3
@@ -225,10 +220,6 @@ arch-chroot /mnt hwclock --systohc --localtime
 sleep 3
 clear
 
-# Set hostname
-arch-chroot /mnt echo $hostname > /mnt/etc/hostname
-clear
-
 echo -ne "
 -------------------------------------------------------------------------
                     Setting up users and passwords 
@@ -244,24 +235,29 @@ arch-chroot /mnt useradd -m -g users -G users,audio,lp,optical,storage,video,whe
 
 # Add user password
 echo "$username:$password" | chpasswd --root /mnt
+
+# Set hostname
+arch-chroot /mnt echo $hostname > /mnt/etc/hostname
 clear
 
 echo -ne "
 -------------------------------------------------------------------------
-                    Installing Xorg
+                    Installing Packages
 -------------------------------------------------------------------------
 "
 sleep 3
-arch-chroot /mnt pacman -S --noconfirm --needed mesa xorg xorg-server xorg-apps xorg-drivers xorg-xkill xorg-xinit xterm xwayland egl-wayland xwayland $gpu 
+arch-chroot /mnt pacman -S --noconfirm --needed mesa xorg xorg-server xorg-xwayland $gpu $ucode cups bluez bluez-libs bluez-utils networkmanager ntfs-3g p7zip zip sudo nano
+clear
 
 echo -ne "
 -------------------------------------------------------------------------
-                    Installing additional packages
+                    Installing Desktop
 -------------------------------------------------------------------------
 "
 sleep 3
-pacman -S --noconfirm --needed cups bluez bluez-libs bluez-utils networkmanager ntfs-3g p7zip zip 
+arch-chroot /mnt pacman -S --noconfirm --needed plasma plasma-wayland-session kde-applications
 
+sleep 3
 # Enable system services
 echo -ne "
 -------------------------------------------------------------------------
@@ -276,7 +272,7 @@ systemctl enable bluetooth
 
 echo -ne "
 -------------------------------------------------------------------------
-                    Finalize install
+                    Verifying GRUB
 -------------------------------------------------------------------------
 "
 
