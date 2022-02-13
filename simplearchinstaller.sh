@@ -42,6 +42,28 @@ read -rep "Please enter your username: " username
 echo -ne "Please enter your password: \n"
 read -sr password 
 read -rep "Please enter your hostname: " hostname
+echo -ne "
+    Please select Desktop Environment:
+    1)      KDE
+    2)      Gnome
+    3)      XFCE
+    4)      Cinnamon
+    5)      TTY (No graphical desktop environment)
+
+"
+read -rep "Select your Desktop Environment: " DE
+case $DE in
+1|1)|KDE|KDe|Kde|kde)
+    Desktop_Environment=KDE;;
+2|2)|GNOME|Gnome|gnome)
+    Desktop_Environment=Gnome;;
+3|3)|XFCE|Xfce|xfce)
+    Desktop_Environment=Xfce;;
+4|4)|CINNAMON|Cinnamon|cinnamon)
+    Desktop_Environment=Cinnamon;;
+5|5)|TTY|Tty|tty)
+    Desktop_Environment=TTY;;
+
 clear
 
 
@@ -319,13 +341,14 @@ echo -ne "
 sleep 3
 
 if $Desktop_Environment=KDE; then
-    arch-chroot /mnt pacman -S plasma kde-applications sddm plasma-wayland-session
+    arch-chroot /mnt pacman -S --noconfirm --needed plasma kde-applications sddm plasma-wayland-session
     arch-chroot /mnt systemctl enable sddm
 
 elif $Desktop_Environment=Gnome; then
-    arch-chroot /mnt pacman -S gnome
+    arch-chroot /mnt pacman -S --noconfirm --needed gnome gdm
     arch-chroot /mnt systemctl enable gdm.service
 
+fi
 clear
 
 # Enable system services
