@@ -1,4 +1,30 @@
 #!/bin/bash
+
+: '
+
+MIT License
+
+Copyright (c) 2022 pHamala
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+'
+
 clear
 simplearchinstaller (){
 echo -ne "
@@ -12,33 +38,42 @@ simplearchinstaller
 
 # Enter userinfo
 
-read -p "Please enter your username: " username
-
+read -rep "Please enter your username: " username
 echo -ne "Please enter your password: \n"
-read -s password 
-
+read -sr password 
 read -rep "Please enter your hostname: " hostname
 clear
 
-simplearchinstaller
 
 # selection for disk type
-
-lsblk -n --output TYPE,KNAME,SIZE | awk '$1=="disk"{print NR,"/dev/"$2" - "$3}' # show disks with /dev/ prefix and size
+simplearchinstaller
+lsblk -n --output TYPE,KNAME,SIZE | awk '$1=="disk"{print NR,"/dev/"$2" - "$3}'
 echo -ne "
 ------------------------------------------------------------------------
-    THIS WILL FORMAT AND DELETE ALL DATA ON THE DISK                  
+                THIS WILL ERASE EVERYTHING IN THE DISK                 
 ------------------------------------------------------------------------
 "
-read -p "Please enter full path to disk: (example /dev/sda): " disk
+read -rep "Please enter full path to disk: (example /dev/sda): " disk
+clear
+
+# Enter keymap
+simplearchinstaller
+echo -ne "
+If you are unsure what keymap you should choose, quit this script
+with CTRL+C and type ls /usr/share/kbd/keymaps/**/*.map.gz
+------------------------------------------------------------------------                
+"
+read -rep "Please enter your keymap: " keymap
 clear
 
 simplearchinstaller
 
 # Detect timezone
+
+
 time_zone="$(curl --fail https://ipapi.co/timezone)"
 clear
-easyarchinstaller
+simplearchinstaller
 echo -ne "System detected your timezone to be '$time_zone' \n"
 echo -ne "Is this correct? yes/no:" 
 read answer
@@ -46,7 +81,7 @@ case $answer in
     y|Y|yes|Yes|YES)
     timezone=$time_zone;;
     n|N|no|NO|No)
-    echo "Please enter your desired timezone e.g. Europe/London :" 
+    echo "Please enter your desired timezone e.g. Europe/Berlin :" 
     read new_timezone
     timezone=$new_timezone;;
     *) echo "Wrong option. Try again";;
@@ -55,7 +90,11 @@ esac
 clear
 
 # Prepare disk for installation
-simplearchinstaller
+echo -ne "
+-------------------------------------------------------------------------
+                    Formatting disk 
+-------------------------------------------------------------------------
+"
 pacman -S --noconfirm gptfdisk btrfs-progs
 clear
 
@@ -91,9 +130,10 @@ if [[ ${BOOT_TYPE} =~ "BIOS" ]]; then
     mkfs.btrfs -L ROOT ${partition3} -f 
 
     # Mount created partitions
+
+    mkswap ${partition2}
     swapon ${partition2}
     mount -t btrfs ${partition3} /mnt
-
 
 else
 
@@ -108,79 +148,204 @@ else
     mkfs.btrfs -L ROOT ${partition3} -f 
 
     # Mount created partitions
+    
+    mkswap ${partition2}
     swapon ${partition2}
     mount -t btrfs ${partition3} /mnt
 
 fi   
 clear
 
-# Install Arch Basic Packages
-simplearchinstaller
-pacstrap /mnt base base-devel linux linux-firmware sudo
-clear
-# Generate fstab file
+# determine processor-type 
 
+proc_type=$(lscpu)
+if grep -E "GenuineIntel" <<< ${proc_type}; then
+    ucode=intel-ucode
+    
+elif grep -E "AuthenticAMD" <<< ${proc_type}; then
+    ucode=amd-ucode    
+ 
+fi
+clear
+
+# Determine Graphic Drivers find and install
+echo -ne "
+-------------------------------------------------------------------------
+                    Determining GPU
+-------------------------------------------------------------------------
+"
+sleep 3
+gpu_type=$(lspci)
+if grep -E "NVIDIA|GeForce" <<< ${gpu_type}; then
+    gpu=nvidia nvidia-xconfig
+
+elif lspci | grep 'VGA' | grep -E "Radeon|AMD"; then
+    gpu=xf86-video-amdgpu
+
+elif grep -E "Integrated Graphics Controller" <<< ${gpu_type}; then
+    gpu=libva-intel-driver libvdpau-va-gl lib32-vulkan-intel vulkan-intel libva-intel-driver libva-utils lib32-mesa
+
+elif grep -E "Intel Corporation UHD" <<< ${gpu_type}; then
+    gpu=ibva-intel-driver libvdpau-va-gl lib32-vulkan-intel vulkan-intel libva-intel-driver libva-utils lib32-mesa
+fi
+clear
+
+
+# Optimize mirrorlist and pacman for faster downloads
+echo -ne "
+-------------------------------------------------------------------------
+        Optimizing mirrors and pacman for Base Arch Packages
+-------------------------------------------------------------------------
+"
+sleep 3
+iso=$(curl -4 ifconfig.co/country-iso)
+sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
+pacman -S --noconfirm reflector rsync
+cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
+reflector -a 48 -c $iso -f 5 -l 20 --sort rate --save /etc/pacman.d/mirrorlist
+clear
+
+# Install Arch Basic Packages
+echo -ne "
+-------------------------------------------------------------------------
+                    Installing Base Arch Packages
+-------------------------------------------------------------------------
+"
+sleep 3
+pacstrap /mnt base base-devel linux linux-firmware
+clear
+
+# Generate locale
+echo -ne "
+-------------------------------------------------------------------------
+                    Generating locales and keymap
+-------------------------------------------------------------------------
+"
+sleep 3
+# Generate fstab file
 genfstab -pU /mnt >> /mnt/etc/fstab
 
 # Generate locale
-simplearchinstaller
 echo "en_US.UTF-8 UTF-8" >> /mnt/etc/locale.gen
 echo "LANG=en_US.UTF-8" >> /mnt/etc/locale.conf
 arch-chroot /mnt locale-gen
+
+# Add persistent keymap
+arch-chroot /mnt localectl --no-convert set-keymap $keymap
 clear
 
 # Setup system clock
+echo -ne "
+-------------------------------------------------------------------------
+                    Setting up system clock and timezone
+-------------------------------------------------------------------------
+"
+sleep 3
 arch-chroot /mnt timedatectl set-ntp true
 arch-chroot /mnt timedatectl --no-ask-password set-timezone $timezone
 arch-chroot /mnt hwclock --systohc --localtime
+sleep 3
 clear
 
-# Set hostname
-echo $hostname > /mnt/etc/hostname
-clear
+echo -ne "
+-------------------------------------------------------------------------
+                    Setting up users and passwords 
+-------------------------------------------------------------------------
+"
 
-
+sleep 3
 # Set root password
 echo -en "$password\n$password" | passwd
 
 # Create new user
-arch-chroot /mnt useradd -m -G wheel -s /bin/bash $username
-# Add user as a sudoer
-arch-chroot /mnt echo '%wheel ALL=(ALL) ALL' | EDITOR='tee -a' visudo
-sleep 5
+arch-chroot /mnt useradd -m -g users -G users,audio,lp,optical,storage,video,wheel,games,power,scanner -s /bin/bash $username
+
 # Add user password
 echo "$username:$password" | chpasswd --root /mnt
-sleep 5
 
+# Set hostname
+arch-chroot /mnt echo $hostname > /mnt/etc/hostname
+clear
+
+# Optimize mirrorlist and pacman for faster downloads
+echo -ne "
+-------------------------------------------------------------------------
+        Optimizing mirrors and pacman for other packages
+-------------------------------------------------------------------------
+"
+arch-chroot /mnt /bin/bash << EOF
+sleep 3
+iso=$(curl -4 ifconfig.co/country-iso)
+sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
+pacman -S --noconfirm reflector rsync
+cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
+reflector -a 48 -c $iso -f 5 -l 20 --sort rate --save /etc/pacman.d/mirrorlist
+clear
+
+EOF
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Installing Packages
+-------------------------------------------------------------------------
+"
+sleep 3
+arch-chroot /mnt pacman -S --noconfirm --needed mesa xorg xorg-server xorg-xwayland $gpu $ucode cups bluez bluez-libs bluez-utils networkmanager ntfs-3g p7zip zip sudo nano
+clear
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Installing Desktop
+-------------------------------------------------------------------------
+"
+sleep 3
+arch-chroot /mnt pacman -S --noconfirm --needed plasma plasma-wayland-session kde-applications sddm
+
+clear
+
+# Enable system services
+echo -ne "
+-------------------------------------------------------------------------
+                    Enabling services
+-------------------------------------------------------------------------
+"
+sleep 3
+arch-chroot /mnt systemctl enable fstrim.timer
+arch-chroot /mnt systemctl enable NetworkManager  
+arch-chroot /mnt systemctl enable cups
+arch-chroot /mnt systemctl enable bluetooth
+arch-chroot /mnt systemctl enable sddm
+clear
+
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Verifying GRUB
+-------------------------------------------------------------------------
+"
 
 # Install Grub
+sleep 3
 arch-chroot /mnt /bin/bash << EOF
 
-# Check if disk is sdd/hdd or NVME
-if [[ "${disk}" =~ "nvme" ]]; then
-    partition1=${DISK}p1
-
-else
-    partition1=${disk}1
-
-fi
+# Add user as sudoer
+echo '%wheel ALL=(ALL) ALL' | EDITOR='tee -a' visudo
 
 # Check if boot type is BIOS or UEFI
 if [[ -d "/sys/firmware/efi" ]]; then
     
+    mkinitcpio -p linux
     pacman -S grub efibootmgr os-prober --noconfirm
     mkdir /boot/efi
     mount ${partition1} /boot/efi
     grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi
     grub-mkconfig -o /boot/grub/grub.cfg 
     
-
-else [[ ! -d "/sys/firmware/efi" ]]; 
+else 
     
+    mkinitcpio -p linux
     pacman -S grub os-prober --noconfirm
-    mkdir /boot
-    mount ${partition1} /boot
-    grub-install ${disk}
+    grub-install --target=i386-pc ${disk}
     grub-mkconfig -o /boot/grub/grub.cfg 
 
 fi
@@ -188,9 +353,13 @@ fi
 clear
 EOF
 
+simplearchinstaller
 rm -R /root/SimpleArchInstaller
-umount /mnt
-swapoff ${partition2}
+echo -ne "
+            Arch Linux installed successfully, reboot and enjoy!
+-------------------------------------------------------------------------
+"
+
 
 
 
