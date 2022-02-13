@@ -328,6 +328,8 @@ elif $Desktop_Environment=Gnome; then
     arch-chroot /mnt systemctl enable gdm.service
 
 fi
+
+sleep 5
 clear
 
 # Enable system services
@@ -343,6 +345,8 @@ arch-chroot /mnt systemctl enable cups
 arch-chroot /mnt systemctl enable bluetooth
 arch-chroot /mnt systemctl enable sddm
 clear
+
+sleep 5
 
 
 echo -ne "
