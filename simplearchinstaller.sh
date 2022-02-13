@@ -53,13 +53,14 @@ echo -ne "
 "
 read -rep "Select your Desktop Environment. Choose number: " DE
 case $DE in
+
 1) Desktop_Environment=KDE;;
 2) Desktop_Environment=Gnome;;
 3) Desktop_Environment=Xfce;;
 4) Desktop_Environment=Cinnamon;;
 5) Desktop_Environment=TTY;;
 
-clear
+esac
 
 
 # selection for disk type
