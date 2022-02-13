@@ -1,4 +1,30 @@
 #!/bin/bash
+
+: '
+
+MIT License
+
+Copyright (c) 2022 pHamala
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+'
+
 clear
 simplearchinstaller (){
 echo -ne "
@@ -21,10 +47,10 @@ clear
 
 # selection for disk type
 simplearchinstaller
-lsblk -n --output TYPE,KNAME,SIZE | awk '$1=="disk"{print NR,"/dev/"$2" - "$3}' # show disks with /dev/ prefix and size
+lsblk -n --output TYPE,KNAME,SIZE | awk '$1=="disk"{print NR,"/dev/"$2" - "$3}'
 echo -ne "
 ------------------------------------------------------------------------
-    THIS WILL ERASE EVERYTHING IN THE DISK                 
+                THIS WILL ERASE EVERYTHING IN THE DISK                 
 ------------------------------------------------------------------------
 "
 read -rep "Please enter full path to disk: (example /dev/sda): " disk
@@ -43,6 +69,7 @@ clear
 simplearchinstaller
 
 # Detect timezone
+
 
 time_zone="$(curl --fail https://ipapi.co/timezone)"
 clear
@@ -167,7 +194,7 @@ clear
 # Optimize mirrorlist and pacman for faster downloads
 echo -ne "
 -------------------------------------------------------------------------
-                    Optimizing mirrors and pacman 
+        Optimizing mirrors and pacman for Base Arch Packages
 -------------------------------------------------------------------------
 "
 sleep 3
@@ -240,6 +267,23 @@ echo "$username:$password" | chpasswd --root /mnt
 arch-chroot /mnt echo $hostname > /mnt/etc/hostname
 clear
 
+# Optimize mirrorlist and pacman for faster downloads
+echo -ne "
+-------------------------------------------------------------------------
+        Optimizing mirrors and pacman for other packages
+-------------------------------------------------------------------------
+"
+arch-chroot /mnt /bin/bash << EOF
+sleep 3
+iso=$(curl -4 ifconfig.co/country-iso)
+sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
+pacman -S --noconfirm reflector rsync
+cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
+reflector -a 48 -c $iso -f 5 -l 20 --sort rate --save /etc/pacman.d/mirrorlist
+clear
+
+EOF
+
 echo -ne "
 -------------------------------------------------------------------------
                     Installing Packages
@@ -257,7 +301,8 @@ echo -ne "
 sleep 3
 arch-chroot /mnt pacman -S --noconfirm --needed plasma plasma-wayland-session kde-applications sddm
 
-sleep 3
+clear
+
 # Enable system services
 echo -ne "
 -------------------------------------------------------------------------
@@ -270,6 +315,7 @@ arch-chroot /mnt systemctl enable NetworkManager
 arch-chroot /mnt systemctl enable cups
 arch-chroot /mnt systemctl enable bluetooth
 arch-chroot /mnt systemctl enable sddm
+clear
 
 
 echo -ne "
