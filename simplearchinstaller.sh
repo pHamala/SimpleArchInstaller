@@ -66,6 +66,23 @@ with CTRL+C and type ls /usr/share/kbd/keymaps/**/*.map.gz
 read -rep "Please enter your keymap: " keymap
 clear
 
+echo -ne "
+    Please select Desktop Environment:
+    1)      KDE
+    2)      Gnome
+    3)      XFCE
+    4)      Cinnamon
+    5)      TTY (No graphical desktop environment)
+
+"
+read DE
+case $DE in
+1) Desktop_Environment=KDE
+2) Desktop_Environment=Gnome
+3) Desktop_Environment=XFCE
+4) Desktop_Environment=Cinnamon
+5) Desktop_Environment=TTY
+
 simplearchinstaller
 
 # Detect timezone
@@ -88,6 +105,8 @@ case $answer in
 esac
 
 clear
+
+
 
 # Prepare disk for installation
 echo -ne "
@@ -200,7 +219,6 @@ echo -ne "
 sleep 3
 iso=$(curl -4 ifconfig.co/country-iso)
 sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
-pacman -S --noconfirm reflector rsync
 cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
 reflector -a 48 -c $iso -f 5 -l 20 --sort rate --save /etc/pacman.d/mirrorlist
 clear
@@ -299,7 +317,14 @@ echo -ne "
 -------------------------------------------------------------------------
 "
 sleep 3
-arch-chroot /mnt pacman -S --noconfirm --needed plasma plasma-wayland-session kde-applications sddm
+
+if $Desktop_Environment=KDE; then
+    arch-chroot /mnt pacman -S plasma kde-applications sddm plasma-wayland-session
+    arch-chroot /mnt systemctl enable sddm
+
+elif $Desktop_Environment=Gnome; then
+    arch-chroot /mnt pacman -S gnome
+    arch-chroot /mnt systemctl enable gdm.service
 
 clear
 
@@ -354,7 +379,7 @@ clear
 EOF
 
 simplearchinstaller
-#rm -R /root/SimpleArchInstaller
+rm -R /root/SimpleArchInstaller
 echo -ne "
             Arch Linux installed successfully, reboot and enjoy!
 -------------------------------------------------------------------------
