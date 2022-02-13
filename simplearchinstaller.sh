@@ -53,15 +53,15 @@ echo -ne "
 "
 read -rep "Select your Desktop Environment: " DE
 case $DE in
-1|1)|KDE|KDe|Kde|kde)
+1||KDE|KDe|Kde|kde)
     Desktop_Environment=KDE;;
-2|2)|GNOME|Gnome|gnome)
+2||GNOME|Gnome|gnome)
     Desktop_Environment=Gnome;;
-3|3)|XFCE|Xfce|xfce)
+3||XFCE|Xfce|xfce)
     Desktop_Environment=Xfce;;
-4|4)|CINNAMON|Cinnamon|cinnamon)
+4||CINNAMON|Cinnamon|cinnamon)
     Desktop_Environment=Cinnamon;;
-5|5)|TTY|Tty|tty)
+5||TTY|Tty|tty)
     Desktop_Environment=TTY;;
 
 clear
@@ -87,23 +87,6 @@ with CTRL+C and type ls /usr/share/kbd/keymaps/**/*.map.gz
 "
 read -rep "Please enter your keymap: " keymap
 clear
-
-echo -ne "
-    Please select Desktop Environment:
-    1)      KDE
-    2)      Gnome
-    3)      XFCE
-    4)      Cinnamon
-    5)      TTY (No graphical desktop environment)
-
-"
-read DE
-case $DE in
-1) Desktop_Environment=KDE
-2) Desktop_Environment=Gnome
-3) Desktop_Environment=XFCE
-4) Desktop_Environment=Cinnamon
-5) Desktop_Environment=TTY
 
 simplearchinstaller
 
