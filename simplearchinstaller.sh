@@ -255,7 +255,7 @@ echo -ne "
 -------------------------------------------------------------------------
 "
 sleep 3
-arch-chroot /mnt pacman -S --noconfirm --needed plasma plasma-wayland-session kde-applications
+arch-chroot /mnt pacman -S --noconfirm --needed plasma plasma-wayland-session kde-applications sddm
 
 sleep 3
 # Enable system services
@@ -265,10 +265,12 @@ echo -ne "
 -------------------------------------------------------------------------
 "
 sleep 3
-systemctl enable fstrim.timer
-systemctl enable NetworkManager  
-systemctl enable cups
-systemctl enable bluetooth
+arch-chroot /mnt systemctl enable fstrim.timer
+arch-chroot /mnt systemctl enable NetworkManager  
+arch-chroot /mnt systemctl enable cups
+arch-chroot /mnt systemctl enable bluetooth
+arch-chroot /mnt systemctl enable sddm
+
 
 echo -ne "
 -------------------------------------------------------------------------
